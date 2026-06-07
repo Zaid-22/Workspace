@@ -351,7 +351,6 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
 
         {/* Render sticky notes */}
         {notes.map((note, index) => {
-          const stableRotation = note.rotate !== undefined ? note.rotate : (((note.id % 7) - 3) * 0.8).toFixed(1);
           return (
             <StickyNoteCard
               key={note.id}
@@ -361,7 +360,6 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
               language={language}
               translate={translate}
               activeNoteId={activeNoteId}
-              stableRotation={stableRotation}
               bringToFront={bringToFront}
               handleDragStart={handleDragStart}
               handleResizeStart={handleResizeStart}
@@ -392,7 +390,6 @@ function StickyNoteCard({
   language,
   translate,
   activeNoteId,
-  stableRotation,
   bringToFront,
   handleDragStart,
   handleResizeStart,
@@ -426,8 +423,7 @@ function StickyNoteCard({
         top: `${note.y}px`,
         width: `${noteWidth}px`,
         height: `${noteHeight}px`,
-        zIndex: note.zIndex || 1,
-        '--stable-rot': `${stableRotation}deg`
+        zIndex: note.zIndex || 1
       }}
       onMouseDown={() => bringToFront(note.id)}
       onTouchStart={() => bringToFront(note.id)}
