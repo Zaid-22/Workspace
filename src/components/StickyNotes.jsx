@@ -417,6 +417,7 @@ function StickyNoteCard({
         { scale: 1, opacity: 1, duration: 0.45, delay: delay, ease: 'back.out(1.6)', clearProps: 'scale,opacity' }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const noteWidth = note.width || 180;
@@ -432,14 +433,7 @@ function StickyNoteCard({
         width: `${noteWidth}px`,
         height: `${noteHeight}px`,
         zIndex: note.zIndex || 1,
-        transform: note.id === activeNoteId ? 'rotate(0deg) scale(1.04)' : `rotate(${stableRotation}deg)`,
-        boxShadow: note.id === activeNoteId 
-          ? '0 20px 40px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.15)' 
-          : '0 8px 24px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.1)',
-        transition: note.id === activeNoteId 
-          ? 'transform 0.05s ease, box-shadow 0.05s ease' 
-          : 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease',
-        cursor: note.id === activeNoteId ? 'grabbing' : 'grab'
+        '--stable-rot': `${stableRotation}deg`
       }}
       onMouseDown={() => bringToFront(note.id)}
       onTouchStart={() => bringToFront(note.id)}
