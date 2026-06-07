@@ -1569,25 +1569,28 @@ html[dir="rtl"] .search-icon  { right: auto; left: 0.65rem; }
   background: rgba(0, 0, 0, 0.25);
 }
 
-.sticky-note-resize-handle {
+/* 8-Way Resize Handles */
+.resize-handle {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 18px;
-  height: 18px;
-  cursor: se-resize;
-  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.18) 50%);
-  border-bottom-right-radius: var(--r-md);
   z-index: 10;
 }
-html[dir="rtl"] .sticky-note-resize-handle {
-  right: auto;
-  left: 0;
-  cursor: sw-resize;
+.rh-n { top: -4px; left: 8px; right: 8px; height: 8px; cursor: n-resize; }
+.rh-s { bottom: -4px; left: 8px; right: 8px; height: 8px; cursor: s-resize; }
+.rh-e { right: -4px; top: 8px; bottom: 8px; width: 8px; cursor: e-resize; }
+.rh-w { left: -4px; top: 8px; bottom: 8px; width: 8px; cursor: w-resize; }
+.rh-nw { top: -6px; left: -6px; width: 12px; height: 12px; cursor: nwse-resize; }
+.rh-ne { top: -6px; right: -6px; width: 12px; height: 12px; cursor: nesw-resize; }
+.rh-sw { bottom: -6px; left: -6px; width: 12px; height: 12px; cursor: nesw-resize; }
+.rh-se {
+  bottom: 0; right: 0; width: 18px; height: 18px; cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.18) 50%);
+  border-bottom-right-radius: var(--r-md);
+}
+html[dir="rtl"] .rh-se {
+  right: auto; left: 0; cursor: nesw-resize;
   background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.18) 50%);
   border-bottom-right-radius: 0;
   border-bottom-left-radius: var(--r-md);
-  z-index: 10;
 }
 
 /* Note color themes */

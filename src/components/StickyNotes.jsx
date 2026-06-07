@@ -192,8 +192,8 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
     window.addEventListener('touchend', handleDragEnd);
   };
 
-  // Custom Mouse Resize Handler
-  const handleResizeStart = (noteId, e) => {
+  // Custom Mouse Resize Handler (8-directional)
+  const handleResizeStart = (noteId, direction, e) => {
     e.preventDefault();
     e.stopPropagation();
     setActiveNoteId(noteId);
@@ -209,13 +209,13 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
     }
 
     const initialX = note.x;
+    const initialY = note.y;
     const initialWidth = note.width || 180;
     const initialHeight = note.height || 180;
     const initialMouseX = clientX;
     const initialMouseY = clientY;
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
-    const isRtl = document.documentElement.dir === 'rtl';
 
     const handleResizeMove = (moveEvent) => {
       const currentX = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientX : moveEvent.clientX;
@@ -224,48 +224,42 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
       const deltaX = currentX - initialMouseX;
       const deltaY = currentY - initialMouseY;
 
-      let newWidth, newHeight;
-      let newX = note.x;
+      let newWidth = initialWidth;
+      let newHeight = initialHeight;
+      let newX = initialX;
+      let newY = initialY;
 
-      if (isRtl) {
-        // Resizing from the bottom-left corner in RTL
-        newWidth = initialWidth - deltaX;
-        newHeight = initialHeight + deltaY;
-
-        // Snapping sizing if snapToGrid is checked
-        if (snapToGrid) {
-          newWidth = Math.round(newWidth / 20) * 20;
-          newHeight = Math.round(newHeight / 20) * 20;
-        }
-
-        // Clamp width (Min: 160px, Max: note's current right boundary starting from left)
-        const maxWidth = initialX + initialWidth;
-        newWidth = Math.max(160, Math.min(newWidth, maxWidth));
-        
-        // Shifting coordinates leftwards as note expands leftwards
-        newX = initialX + initialWidth - newWidth;
-      } else {
-        // Resizing from bottom-right corner in LTR
+      // Handle horizontal resizing
+      if (direction.includes('e')) {
         newWidth = initialWidth + deltaX;
-        newHeight = initialHeight + deltaY;
-
-        if (snapToGrid) {
-          newWidth = Math.round(newWidth / 20) * 20;
-          newHeight = Math.round(newHeight / 20) * 20;
-        }
-
-        // Clamp width (Min: 160px, Max: remaining canvas space on right)
+        if (snapToGrid) newWidth = Math.round(newWidth / 20) * 20;
         const maxWidth = canvasRect.width - initialX;
         newWidth = Math.max(160, Math.min(newWidth, maxWidth));
+      } else if (direction.includes('w')) {
+        newWidth = initialWidth - deltaX;
+        if (snapToGrid) newWidth = Math.round(newWidth / 20) * 20;
+        const maxWidth = initialX + initialWidth;
+        newWidth = Math.max(160, Math.min(newWidth, maxWidth));
+        newX = initialX + initialWidth - newWidth;
       }
 
-      // Clamp height (Min: 160px, Max: remaining canvas space below)
-      const maxHeight = canvasRect.height - note.y;
-      newHeight = Math.max(160, Math.min(newHeight, maxHeight));
+      // Handle vertical resizing
+      if (direction.includes('s')) {
+        newHeight = initialHeight + deltaY;
+        if (snapToGrid) newHeight = Math.round(newHeight / 20) * 20;
+        const maxHeight = canvasRect.height - initialY;
+        newHeight = Math.max(160, Math.min(newHeight, maxHeight));
+      } else if (direction.includes('n')) {
+        newHeight = initialHeight - deltaY;
+        if (snapToGrid) newHeight = Math.round(newHeight / 20) * 20;
+        const maxHeight = initialY + initialHeight;
+        newHeight = Math.max(160, Math.min(newHeight, maxHeight));
+        newY = initialY + initialHeight - newHeight;
+      }
 
       setNotes((prevNotes) =>
         prevNotes.map((n) =>
-          n.id === noteId ? { ...n, width: newWidth, height: newHeight, x: newX } : n
+          n.id === noteId ? { ...n, width: newWidth, height: newHeight, x: newX, y: newY } : n
         )
       );
     };
@@ -486,12 +480,15 @@ function StickyNoteCard({
         />
       </div>
 
-      {/* Note Resize Handle */}
-      <div
-        className="sticky-note-resize-handle"
-        onMouseDown={(e) => handleResizeStart(note.id, e)}
-        onTouchStart={(e) => handleResizeStart(note.id, e)}
-      />
+      {/* 8-Way Resize Handles */}
+      <div className="resize-handle rh-n" onMouseDown={(e) => handleResizeStart(note.id, 'n', e)} onTouchStart={(e) => handleResizeStart(note.id, 'n', e)} />
+      <div className="resize-handle rh-s" onMouseDown={(e) => handleResizeStart(note.id, 's', e)} onTouchStart={(e) => handleResizeStart(note.id, 's', e)} />
+      <div className="resize-handle rh-e" onMouseDown={(e) => handleResizeStart(note.id, 'e', e)} onTouchStart={(e) => handleResizeStart(note.id, 'e', e)} />
+      <div className="resize-handle rh-w" onMouseDown={(e) => handleResizeStart(note.id, 'w', e)} onTouchStart={(e) => handleResizeStart(note.id, 'w', e)} />
+      <div className="resize-handle rh-nw" onMouseDown={(e) => handleResizeStart(note.id, 'nw', e)} onTouchStart={(e) => handleResizeStart(note.id, 'nw', e)} />
+      <div className="resize-handle rh-ne" onMouseDown={(e) => handleResizeStart(note.id, 'ne', e)} onTouchStart={(e) => handleResizeStart(note.id, 'ne', e)} />
+      <div className="resize-handle rh-sw" onMouseDown={(e) => handleResizeStart(note.id, 'sw', e)} onTouchStart={(e) => handleResizeStart(note.id, 'sw', e)} />
+      <div className="resize-handle rh-se" onMouseDown={(e) => handleResizeStart(note.id, 'se', e)} onTouchStart={(e) => handleResizeStart(note.id, 'se', e)} />
     </div>
   );
 }
