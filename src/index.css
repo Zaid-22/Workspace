@@ -107,7 +107,7 @@
   /* Fonts */
   --font-main: 'Outfit', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-note: 'Caveat', 'Aref Ruqaa', 'Tajawal', cursive, sans-serif;
+  --font-note: var(--font-main);
 
   /* Radii & timing */
   --r-sm: 8px;
@@ -1570,16 +1570,24 @@ html[dir="rtl"] .search-icon  { right: auto; left: 0.65rem; }
 }
 
 .sticky-note-resize-handle {
-  position:absolute; bottom:0; right:0;
-  width:14px; height:14px; cursor:se-resize;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: se-resize;
   background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.18) 50%);
-  border-bottom-right-radius:var(--r-md);
+  border-bottom-right-radius: var(--r-md);
+  z-index: 10;
 }
 html[dir="rtl"] .sticky-note-resize-handle {
-  right:auto; left:0; cursor:sw-resize;
+  right: auto;
+  left: 0;
+  cursor: sw-resize;
   background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.18) 50%);
-  border-bottom-right-radius:0;
-  border-bottom-left-radius:var(--r-md);
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: var(--r-md);
+  z-index: 10;
 }
 
 /* Note color themes */

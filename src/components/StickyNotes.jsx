@@ -125,8 +125,8 @@ export default function StickyNotes({ notes, setNotes, translate, language }) {
     bringToFront(noteId);
     setActiveNoteId(noteId);
 
-    // Prevent dragging if clicked on textarea or action buttons
-    if (e.target.tagName === 'TEXTAREA' || e.target.closest('.sticky-note-btn')) {
+    // Prevent dragging if clicked on textarea or any button (color dots, delete button)
+    if (e.target.tagName === 'TEXTAREA' || e.target.closest('button')) {
       setActiveNoteId(null);
       return;
     }
