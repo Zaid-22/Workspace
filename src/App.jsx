@@ -212,40 +212,62 @@ export default function App() {
   };
 
   // ==================== AUDIO NOTIFICATION ====================
+  const audioCtxRef = useRef(null);
+
+  // Resume or create AudioContext (must be triggered by a user gesture first)
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  // "Warm up" the AudioContext on first user interaction so the alarm is never blocked
+  useEffect(() => {
+    const unlock = () => { getAudioCtx(); };
+    window.addEventListener('pointerdown', unlock, { once: true });
+    return () => window.removeEventListener('pointerdown', unlock);
+  }, [getAudioCtx]);
+
   const playNotificationSound = useCallback(() => {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      
-      // Tone 1: High Pitch
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.connect(gain1);
-      gain1.connect(audioCtx.destination);
-      osc1.frequency.setValueAtTime(660, audioCtx.currentTime); // Mi
-      gain1.gain.setValueAtTime(0, audioCtx.currentTime);
-      gain1.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.05);
-      gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-      osc1.start(audioCtx.currentTime);
-      osc1.stop(audioCtx.currentTime + 0.4);
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
 
-      // Tone 2: Higher Pitch (Arpeggio effect)
-      setTimeout(() => {
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.frequency.setValueAtTime(880, audioCtx.currentTime); // La
-        gain2.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain2.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.05);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
-        osc2.start(audioCtx.currentTime);
-        osc2.stop(audioCtx.currentTime + 0.5);
-      }, 150);
+      // 4-note victory fanfare: C5 → E5 → G5 → C6
+      const notes = [
+        { freq: 523.25, start: 0.0,  dur: 0.18 },
+        { freq: 659.25, start: 0.18, dur: 0.18 },
+        { freq: 783.99, start: 0.36, dur: 0.18 },
+        { freq: 1046.5, start: 0.54, dur: 0.55 },
+      ];
 
-    } catch (e) {
-      console.warn('Audio device blocked or unavailable for chime:', e);
+      notes.forEach(({ freq, start, dur }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + start);
+
+        gain.gain.setValueAtTime(0, now + start);
+        gain.gain.linearRampToValueAtTime(0.38, now + start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + start);
+        osc.stop(now + start + dur + 0.05);
+      });
+    } catch (err) {
+      console.warn('Could not play alarm sound:', err);
     }
-  }, []);
+  }, [getAudioCtx]);
+
+
 
   // ==================== TIMER HANDLERS ====================
   const switchMode = useCallback((mode) => {
