@@ -87,7 +87,7 @@ export default function TodoForm({ onAddTodo, translate }) {
         {showOptions && (
           <div className="form-expandable-options">
             <div className="option-field">
-              <label>{translate('lowPriority').replace('Priority', '') /* General Priority label */ || 'Priority'}</label>
+              <label>{translate('priority')}</label>
               <select
                 className="select-main"
                 value={priority}
@@ -102,7 +102,7 @@ export default function TodoForm({ onAddTodo, translate }) {
             </div>
 
             <div className="option-field">
-              <label>Category</label>
+              <label>{translate('category')}</label>
               <select
                 className="select-main"
                 value={category}
@@ -117,7 +117,7 @@ export default function TodoForm({ onAddTodo, translate }) {
             </div>
 
             <div className="option-field">
-              <label>Target Time</label>
+              <label>{translate('targetTime')}</label>
               <input
                 type="time"
                 className="input-sub"

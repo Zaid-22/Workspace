@@ -50,16 +50,7 @@ export default function ConfirmModal({ isOpen, onClose, title, message, onConfir
 
     const handleClickOutside = (e) => {
       if (e.target === dialog) {
-        const rect = dialog.getBoundingClientRect();
-        const isDialogContent = (
-          rect.top <= e.clientY &&
-          e.clientY <= rect.top + rect.height &&
-          rect.left <= e.clientX &&
-          e.clientX <= rect.left + rect.width
-        );
-        if (!isDialogContent) {
-          onClose();
-        }
+        onClose();
       }
     };
 

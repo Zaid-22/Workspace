@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import TRANSLATIONS from './i18n/translations';
 import { warmUp, playTimerComplete, playTaskComplete, playTaskUncomplete, playTaskDelete, playUIClick } from './sounds';
 import gsap from 'gsap';
 import useLocalStorage from './hooks/useLocalStorage';
@@ -34,7 +35,7 @@ function TabTransitionWrapper({ children }) {
 }
 
 
-import TRANSLATIONS from './i18n/translations';
+
 
 
 export default function App() {
@@ -164,20 +165,29 @@ export default function App() {
     return () => root.classList.remove('notes-mode');
   }, [activeTab]);
 
-  // Timer Tick Interval
+  // Timer Tick Interval — drift-aware so it works in background tabs
+  const timerStartRef = useRef(null);
+  const timerSnapshotRef = useRef(null);
+
   useEffect(() => {
     let interval = null;
     if (isRunning) {
-      interval = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 0) return 0;
-          return prev - 1;
-        });
-      }, 1000);
+      // Capture the moment we started (or resumed) and the remaining time at that moment
+      timerStartRef.current = Date.now();
+      timerSnapshotRef.current = timeRemaining;
+
+      const tick = () => {
+        const elapsedSeconds = Math.floor((Date.now() - timerStartRef.current) / 1000);
+        const newRemaining = Math.max(0, timerSnapshotRef.current - elapsedSeconds);
+        setTimeRemaining(newRemaining);
+      };
+
+      interval = setInterval(tick, 250); // check 4x/sec for snappier updates
     }
     return () => {
       if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRunning]);
 
   // Handle completion in reaction to timeRemaining hitting 0

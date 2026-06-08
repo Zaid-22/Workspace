@@ -38,7 +38,7 @@ export default function TodoList({
     { key: 'today', label: translate('today') },
     { key: 'active', label: translate('active') },
     { key: 'completed', label: translate('completed') },
-    { key: 'high', label: translate('highPriority').replace('Priority', '') || 'High' },
+    { key: 'high', label: translate('high') },
     { key: 'all', label: translate('all') }
   ];
 
