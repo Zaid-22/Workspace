@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { warmUp, playTimerComplete, playTaskComplete, playTaskUncomplete, playTaskDelete, playUIClick } from './sounds';
 import gsap from 'gsap';
 import useLocalStorage from './hooks/useLocalStorage';
 import Header from './components/Header';
@@ -33,121 +34,8 @@ function TabTransitionWrapper({ children }) {
 }
 
 
-// ==================== TRANSLATIONS ====================
-const TRANSLATIONS = {
-  en: {
-    appTitle: 'Study Space',
-    subtitle: 'Stay focused, get things done!',
-    totalTasks: 'Total Tasks',
-    activeTasks: 'Active Tasks',
-    completedTasks: 'Completed',
-    completion: 'Completion',
-    pomodoros: 'Pomodoros',
-    focusTime: 'Focus Time',
-    start: 'Start',
-    pause: 'Pause',
-    reset: 'Reset',
-    focus25min: 'Focus',
-    shortBreak5min: 'Short Break',
-    longBreak15min: 'Long Break',
-    customDuration: 'Custom Timer',
-    todaySessions: 'Today: {count} sessions',
-    searchTasks: 'Search tasks...',
-    addNewTask: 'Add a study task...',
-    noCategory: 'No Category',
-    work: 'Work',
-    personal: 'Personal',
-    shopping: 'Shopping',
-    health: 'Health',
-    study: 'Study',
-    other: 'Other',
-    lowPriority: 'Low Priority',
-    mediumPriority: 'Medium Priority',
-    highPriority: 'High Priority',
-    addNote: 'Add Note',
-    addNotes: 'Add notes or description...',
-    addTask: '+ Add',
-    moreOptions: 'More Options',
-    lessOptions: 'Less Options',
-    more: 'More',
-    all: 'All',
-    active: 'Active',
-    completed: 'Completed',
-    today: 'Today',
-    overdue: 'Overdue',
-    export: '📥 Export Data',
-    import: '📤 Import Data',
-    noTasks: 'No tasks found. Add one to get started!',
-    taskAdded: 'Task added successfully!',
-    taskCompleted: 'Task completed!',
-    taskDeleted: 'Task deleted',
-    taskUpdated: 'Task updated!',
-    timerFinished: "Time's up! Great job!",
-    dashboardTab: 'Workspace',
-    notesTab: 'Sticky Notes',
-    snapToGrid: 'Snap to Grid',
-    clearAllNotes: 'Clear Canvas',
-    doubleClickSpawn: 'Double-click anywhere to add a note',
-    notePlaceholder: 'Type note here...',
-    noteColor: 'Note Color:'
-  },
-  ar: {
-    appTitle: 'مساحة الدراسة',
-    subtitle: 'ابقَ مركزاً، أنجز المهام!',
-    totalTasks: 'إجمالي المهام',
-    activeTasks: 'مهام نشطة',
-    completedTasks: 'مكتملة',
-    completion: 'نسبة الإنجاز',
-    pomodoros: 'بومودورو',
-    focusTime: 'وقت التركيز',
-    start: 'ابدأ',
-    pause: 'إيقاف',
-    reset: 'إعادة',
-    focus25min: 'تركيز',
-    shortBreak5min: 'استراحة قصيرة',
-    longBreak15min: 'استراحة طويلة',
-    customDuration: 'مؤقت مخصص',
-    todaySessions: 'جلسات اليوم: {count}',
-    searchTasks: 'ابحث عن المهام...',
-    addNewTask: 'أضف مهمة دراسية...',
-    noCategory: 'بلا تصنيف',
-    work: 'عمل',
-    personal: 'شخصي',
-    shopping: 'تسوق',
-    health: 'صحة',
-    study: 'دراسة',
-    other: 'أخرى',
-    lowPriority: 'أولوية منخفضة',
-    mediumPriority: 'أولوية متوسطة',
-    highPriority: 'أولوية عالية',
-    addNote: 'إضافة ملاحظة',
-    addNotes: 'أضف ملاحظات أو وصف...',
-    addTask: '+ إضافة',
-    moreOptions: 'خيارات إضافية',
-    lessOptions: 'خيارات أقل',
-    more: 'المزيد',
-    all: 'الكل',
-    active: 'نشطة',
-    completed: 'مكتملة',
-    today: 'اليوم',
-    overdue: 'متأخرة',
-    export: '📥 تصدير البيانات',
-    import: '📤 استيراد البيانات',
-    noTasks: 'لا توجد مهام حالياً. أضف مهمة جديدة للبدء!',
-    taskAdded: 'تم إضافة المهمة بنجاح!',
-    taskCompleted: 'تم إكمال المهمة!',
-    taskDeleted: 'تم حذف المهمة',
-    taskUpdated: 'تم تحديث المهمة!',
-    timerFinished: 'انتهى الوقت! عمل رائع!',
-    dashboardTab: 'مساحة العمل',
-    notesTab: 'الملاحظات اللاصقة',
-    snapToGrid: 'محاذاة للشبكة',
-    clearAllNotes: 'مسح لوحة الملاحظات',
-    doubleClickSpawn: 'انقر مرتين في أي مكان لإضافة ملاحظة',
-    notePlaceholder: 'اكتب ملاحظتك هنا...',
-    noteColor: 'لون الملاحظة:'
-  }
-};
+import TRANSLATIONS from './i18n/translations';
+
 
 export default function App() {
   // ==================== PERSISTENT STORAGE STATE ====================
@@ -211,61 +99,8 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // ==================== AUDIO NOTIFICATION ====================
-  const audioCtxRef = useRef(null);
-
-  // Resume or create AudioContext (must be triggered by a user gesture first)
-  const getAudioCtx = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-    return audioCtxRef.current;
-  }, []);
-
-  // "Warm up" the AudioContext on first user interaction so the alarm is never blocked
-  useEffect(() => {
-    const unlock = () => { getAudioCtx(); };
-    window.addEventListener('pointerdown', unlock, { once: true });
-    return () => window.removeEventListener('pointerdown', unlock);
-  }, [getAudioCtx]);
-
-  const playNotificationSound = useCallback(() => {
-    try {
-      const ctx = getAudioCtx();
-      const now = ctx.currentTime;
-
-      // 4-note victory fanfare: C5 → E5 → G5 → C6
-      const notes = [
-        { freq: 523.25, start: 0.0,  dur: 0.18 },
-        { freq: 659.25, start: 0.18, dur: 0.18 },
-        { freq: 783.99, start: 0.36, dur: 0.18 },
-        { freq: 1046.5, start: 0.54, dur: 0.55 },
-      ];
-
-      notes.forEach(({ freq, start, dur }) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + start);
-
-        gain.gain.setValueAtTime(0, now + start);
-        gain.gain.linearRampToValueAtTime(0.38, now + start + 0.03);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now + start);
-        osc.stop(now + start + dur + 0.05);
-      });
-    } catch (err) {
-      console.warn('Could not play alarm sound:', err);
-    }
-  }, [getAudioCtx]);
+  // ==================== AUDIO WARM-UP ====================
+  useEffect(() => warmUp(), []);
 
 
 
@@ -278,7 +113,7 @@ export default function App() {
 
   const handleTimerComplete = useCallback(() => {
     setIsRunning(false);
-    playNotificationSound();
+    playTimerComplete();
     
     // Add completed Pomodoro session (only if in Focus mode)
     if (timerMode === 'focus') {
@@ -298,7 +133,7 @@ export default function App() {
       // Auto transition back to focus
       switchMode('focus');
     }
-  }, [timerMode, timerSettings, playNotificationSound, switchMode, translate, showToast, setPomodoroSessions]);
+  }, [timerMode, timerSettings, switchMode, translate, showToast, setPomodoroSessions]);
 
   // ==================== SIDE EFFECTS ====================
   // Theme updates
@@ -370,6 +205,7 @@ export default function App() {
     };
     
     setTodos((prev) => [...prev, newTodo]);
+    playUIClick();
     showToast(translate('taskAdded'), 'success');
   };
 
@@ -378,6 +214,11 @@ export default function App() {
       prev.map((todo) => {
         if (todo.id === id) {
           const completed = !todo.completed;
+          if (completed) {
+            playTaskComplete();
+          } else {
+            playTaskUncomplete();
+          }
           showToast(completed ? translate('taskCompleted') : translate('active'), 'success');
           return { ...todo, completed };
         }
@@ -392,6 +233,7 @@ export default function App() {
       title: language === 'ar' ? 'حذف المهمة' : 'Delete Task',
       message: language === 'ar' ? 'هل أنت متأكد من حذف هذه المهمة؟' : 'Are you sure you want to delete this task?',
       onConfirm: () => {
+        playTaskDelete();
         const el = document.querySelector(`.todo-item-card[data-id="${id}"]`);
         if (el) {
           gsap.to(el, {

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { playTimerStart, playTimerPause } from '../sounds';
 
 /**
  * Pomodoro Timer - immersive circular countdown with animated gradient ring,
@@ -34,7 +35,14 @@ export default function Timer({
     return () => { document.title = 'Study Space'; };
   }, [displayTime, timerMode]);
 
-  const handleToggle = () => setIsRunning(!isRunning);
+  const handleToggle = () => {
+    if (!isRunning) {
+      playTimerStart();
+    } else {
+      playTimerPause();
+    }
+    setIsRunning(!isRunning);
+  };
   const handleReset = () => { setIsRunning(false); setTimeRemaining(initialTime); };
 
   // Mode color configs
